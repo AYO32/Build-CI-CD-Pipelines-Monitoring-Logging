@@ -1,5 +1,5 @@
+version: 2.1
 
-<<<<<<< HEAD
 jobs:
   build-frontend:
     docker:
@@ -42,5 +42,3 @@ workflows:
     jobs:
       - build-frontend
       - build-backend      
-=======
->>>>>>> 93b42ec65c5eb84c8ca0b3b38a4c8495918ee892
