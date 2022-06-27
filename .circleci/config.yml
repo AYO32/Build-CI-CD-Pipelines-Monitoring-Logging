@@ -73,7 +73,7 @@ jobs:
       - restore_cache:
           keys: [scan-frontend]
       - run:
-          name: run frontend test
+          name: run frontend scan
           command:
              cd frontend
              npm install
@@ -88,9 +88,9 @@ jobs:
       - restore_cache:
           keys: [scan-backend]
       - run:
-          name: run backend test
+          name: run backend scan
           command:
-             cd frontend
+             cd backend
              npm install
           #  npm install oauth-sign@^0.9.0
              npm audit --audit-level=critical
