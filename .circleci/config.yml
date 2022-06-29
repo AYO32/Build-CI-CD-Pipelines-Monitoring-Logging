@@ -124,11 +124,11 @@ jobs:
             name: Add back-end ip to ansible inventory
             command: |
                3.83.114.184
-            
         - persist_to_workspace:
-          root: ~/
-          paths:
-            - project/.circleci/ansible/inventory.txt       
+            root: ~/
+            paths:
+              - project/.circleci/ansible/inventory.txt    
+              
               
               
     
