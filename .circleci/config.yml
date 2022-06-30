@@ -166,10 +166,6 @@ jobs:
             cd .circleci/ansible
             ansible-playbook -i inventory.txt configure-server.yml
             
-
-  
-        
-  
                                
 workflows:
   default:
