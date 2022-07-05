@@ -181,10 +181,6 @@ jobs:
       - image: amazon/aws-cli
     steps:
       - checkout
-      - attach_workspace:
-          at: ~/
-      - run: cat ~/project/.circleci/ansible/inventory.txt   
-
       - run:
           name: Install dependencies
           command: |
@@ -193,6 +189,10 @@ jobs:
             apt install npm
             apt install nodejs
             apt install awscli
+      - attach_workspace:
+          at: ~/
+      - run: cat ~/project/.circleci/ansible/inventory.txt  
+
       - run:
           name: Get backend url
           command: |
