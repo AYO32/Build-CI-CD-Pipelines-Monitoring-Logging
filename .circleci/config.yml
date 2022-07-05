@@ -185,7 +185,6 @@ jobs:
           name: Install dependencies
           command: |  
             yum -y install python3
-            yum -y install npm
             yum -y install nodejs
             yum -y install awscli
       - attach_workspace:
