@@ -183,8 +183,7 @@ jobs:
       - checkout
       - run:
           name: Install dependencies
-          command: |
-            yum -y install ansible  
+          command: |  
             yum -y install python3
             yum -y install npm
             yum -y install nodejs
