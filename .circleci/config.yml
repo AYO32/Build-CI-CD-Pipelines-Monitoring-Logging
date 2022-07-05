@@ -1,20 +1,6 @@
 version: 2.1
 
-commands:
-  destroy-environment:
-    description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
-    parameters:
-      workflow_id:
-        type: string
-        default: "${CIRCLE_WORKFLOW_ID:0:7}"   
-    steps:
-      - run:
-          name: Destroy environments
-          when: on_fail
-          command: |
-           
         
-           
           
 jobs:
   build-frontend:
@@ -189,8 +175,43 @@ jobs:
               then
                   curl https://kvdb.io/8fsMHx82oib2pjp5xsXqJo//migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
               fi
-             
-                      
+
+  deploy-frontend:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/
+      - run: cat ~/project/.circleci/ansible/inventory.txt   
+
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update ansible  
+            apt install -y python3
+            apt install npm
+            apt install nodejs
+            apt install awscli
+      - run:
+          name: Get backend url
+          command: |
+            export BACKEND_IP=$(aws ec2 describe-instances...............)
+            export API_URL="http://${BACKEND_IP}:3030"
+            echo "API_URL = ${API_URL}"
+            echo API_URL="http://${BACKEND_IP}:3030" >> frontend/.env
+            cat frontend/.env
+            export API_URL="http://${BACKEND_IP}:3030"
+            echo "${API_URL}"        
+      - run:
+          name: Deploy frontend objects
+          command: |
+            cd frontend
+            npm install
+            npm run build
+            tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
+            aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive               
+                    
             
                                
 workflows:
@@ -212,6 +233,8 @@ workflows:
           requires: [deploy-infrastructure]
       - run-migrations:
           requires: [configure-infrastructure]    
+      - deploy-frontend:
+          requires: [run-migrations]    
         
             
          
