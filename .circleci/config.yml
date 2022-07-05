@@ -187,6 +187,7 @@ jobs:
             yum -y install tar gzip 
             yum -y install python3
             yum -y install awscli
+            yum -y install nodejs
       - attach_workspace:
           at: ~/
       - run: cat ~/project/.circleci/ansible/inventory.txt  
