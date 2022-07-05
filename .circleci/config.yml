@@ -184,6 +184,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |  
+            yum -y install tar gzip 
             yum -y install python3
             yum -y install awscli
       - attach_workspace:
