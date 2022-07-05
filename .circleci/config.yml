@@ -184,8 +184,8 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            apk add --update ansible  
-            apt install -y python3
+            apt install ansible  
+            apt install python3
             apt install npm
             apt install nodejs
             apt install awscli
