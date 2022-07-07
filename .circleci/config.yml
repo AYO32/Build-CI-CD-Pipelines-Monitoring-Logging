@@ -228,7 +228,6 @@ jobs:
           command: |
             apk add --update ansible 
             apk  add --update tar gzip
-            curl -sl https://rpm.nodesource.com/setup_16.x| bash -
             apk  add --update nodejs
       - run:
           name: Deploy backend
