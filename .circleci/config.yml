@@ -227,9 +227,9 @@ jobs:
           name: Install dependencies
           command: |
             apk add --update ansible 
-            yum -y install tar gzip
+            apk -y install tar gzip
             curl -sl https://rpm.nodesource.com/setup_16.x| bash -
-            yum -y install nodejs
+            apk -y install nodejs
       - run:
           name: Deploy backend
           command: |
