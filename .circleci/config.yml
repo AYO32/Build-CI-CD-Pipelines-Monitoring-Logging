@@ -243,6 +243,31 @@ jobs:
             echo "Contents  of the inventory.txt file is -------"
             cat inventory.txt
             ansible-playbook -i inventory.txt deploy-backend.yml
+
+  smoke-test:
+    docker:
+        - image: alpine:latest 
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --update curl  
+            apk  add --update npm
+            apk  add --update nodejs
+            apk  add --update awscli
+      - run:
+          name: Backend smoke test
+          command: |
+            export API_URL="http://${BACKEND_IP}:3030"
+            echo "${API_URL}"
+            if curl "${API_URL}/api/status" | grep "ok"
+            then
+               return 0
+            else
+               return 1
+            fi      
+
     
 
                     
@@ -270,7 +295,9 @@ workflows:
       - deploy-frontend:
           requires: [run-migrations]
       - deploy-backend:
-          requires: [run-migrations]        
+          requires: [run-migrations]       
+      - smoke-test:
+          requires: [deploy-backend, deploy-frontend]     
         
             
          
