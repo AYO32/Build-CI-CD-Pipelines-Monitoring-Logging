@@ -228,7 +228,7 @@ jobs:
           command: |
             apk add --update ansible 
             apk  add --update tar gzip
-            apt-get install -y nodejs
+            apk  add --update npm
             apk  add --update nodejs
       - run:
           name: Deploy backend
