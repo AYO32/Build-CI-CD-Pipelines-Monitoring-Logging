@@ -255,7 +255,9 @@ jobs:
             apk add --update curl  
             apk  add --update npm
             apk  add --update nodejs
+            apk  add --update tar gzip
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
+            unzip awscliv2.zip
             apk  add --update awscli
       - run:
           name: Backend smoke test
