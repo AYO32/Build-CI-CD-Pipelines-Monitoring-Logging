@@ -275,7 +275,7 @@ jobs:
             else
                return 1
             fi      
-      - destroy_environment       
+             
       - run:
           name: Frontend smoke test.
           command: |
