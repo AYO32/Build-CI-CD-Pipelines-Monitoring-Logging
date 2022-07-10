@@ -255,6 +255,7 @@ jobs:
             apk add --update curl  
             apk  add --update npm
             apk  add --update nodejs 
+            apk add --update python
             python -m pip install awscli
                  
 
