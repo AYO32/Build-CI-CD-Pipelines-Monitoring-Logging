@@ -253,8 +253,10 @@ jobs:
           name: Install dependencies
           command: |
             apk add --update curl  
-            apk add --update nodejs nodejs-npm
+            apk  add --update npm
+            apk  add --update nodejs 
             apk --no-cache add curl
+            apk add --update python
             python -m pip install awscli
                  
 
