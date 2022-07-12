@@ -1,25 +1,6 @@
 version: 2.1
 
-orbs:
-  aws-cli: circleci/aws-cli@2.0.3
-commands:
-  destroy_environments:
-    description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
-    parameters:
-      backend:
-        type: string
-      frontend:
-        type: string
-      bucket_id:
-        type: string
-    steps:
-      - run:
-          name: Destroy environment
-          when: on_fail
-          command: |
-            aws s3 rm "s3://udapeople-<< parameters.bucket_id >>" --recursive
-            aws cloudformation delete-stack --stack-name << parameters.backend >>
-            aws cloudformation delete-stack --stack-name << parameters.frontend >>
+
     
 
           
@@ -155,10 +136,7 @@ jobs:
             paths:
               - project/.circleci/ansible/inventory.txt   
 
-        - destroy_environments:
-            frontend: "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
-            backend: "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
-            bucket_id: "${CIRCLE_WORKFLOW_ID:0:7}"      
+         
 
   configure-infrastructure:
     docker:
@@ -188,10 +166,7 @@ jobs:
             cd .circleci/ansible
             ansible-playbook -i inventory.txt configure-server.yml
 
-      - destroy_environments:
-          frontend: "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
-          backend: "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
-          bucket_id: "${CIRCLE_WORKFLOW_ID:0:7}"      
+      
 
   run-migrations:
     docker:
@@ -214,10 +189,7 @@ jobs:
                   curl https://kvdb.io/8fsMHx82oib2pjp5xsXqJo//migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
               fi
 
-      - destroy_environments:    
-          frontend: "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
-          backend: "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
-          bucket_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+    
            
 
   deploy-frontend:
@@ -341,10 +313,7 @@ jobs:
               return 1
             fi      
 
-      - destroy_environments:
-          frontend: "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
-          backend: "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
-          bucket_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+      
           
 
     
