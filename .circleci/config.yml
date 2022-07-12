@@ -20,23 +20,7 @@ commands:
             aws s3 rm "s3://udapeople-<< parameters.bucket_id >>" --recursive
             aws cloudformation delete-stack --stack-name << parameters.backend >>
             aws cloudformation delete-stack --stack-name << parameters.frontend >>
-    rollback_migration:
-        description: Rollback the last migration if successfully run in the current workflow.
-        parameters:
-          workflow_id:
-            type: string
-        steps:
-          - run:
-              name: Rollback migrations
-              when: on_fail
-              command: |
-                SUCCESS=$(curl --insecure  https://kvdb.io/8fsMHx82oib2pjp5xsXqJo//migration_<< parameters.workflow_id >>)
-                if(( $SUCCESS==1 )); 
-                then
-                  cd ~/project/backend
-                  npm install
-                  npm run migration:revert
-                fi 
+    
 
           
 jobs:
