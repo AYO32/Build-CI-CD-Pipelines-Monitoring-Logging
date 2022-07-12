@@ -1,6 +1,43 @@
 version: 2.1
 
-        
+orbs:
+  aws-cli: circleci/aws-cli@2.0.3
+commands:
+  destroy_environments:
+    description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
+    parameters:
+      backend:
+        type: string
+      frontend:
+        type: string
+      bucket_id:
+        type: string
+    steps:
+      - run:
+          name: Destroy environment
+          when: on_fail
+          command: |
+            aws s3 rm "s3://udapeople-<< parameters.bucket_id >>" --recursive
+            aws cloudformation delete-stack --stack-name << parameters.backend >>
+            aws cloudformation delete-stack --stack-name << parameters.frontend >>
+rollback_migration:
+    description: Rollback the last migration if successfully run in the current workflow.
+    parameters:
+      workflow_id:
+        type: string
+    steps:
+      - run:
+          name: Rollback migrations
+          when: on_fail
+          command: |
+            SUCCESS=$(curl --insecure  https://kvdb.io/8fsMHx82oib2pjp5xsXqJo//migration_<< parameters.workflow_id >>)
+            if(( $SUCCESS==1 )); 
+            then
+              cd ~/project/backend
+              npm install
+              npm run migration:revert
+            fi 
+
           
 jobs:
   build-frontend:
@@ -133,6 +170,10 @@ jobs:
             root: ~/
             paths:
               - project/.circleci/ansible/inventory.txt   
+        - destroy_environments:
+          frontend: "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
+          backend: "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
+          bucket_id: "${CIRCLE_WORKFLOW_ID:0:7}"      
 
   configure-infrastructure:
     docker:
@@ -162,6 +203,11 @@ jobs:
             cd .circleci/ansible
             ansible-playbook -i inventory.txt configure-server.yml
 
+      - destroy_environments:
+          frontend: "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
+          backend: "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
+          bucket_id: "${CIRCLE_WORKFLOW_ID:0:7}"      
+
   run-migrations:
     docker:
       - image: circleci/node:13.8.0
@@ -182,6 +228,13 @@ jobs:
               then
                   curl https://kvdb.io/8fsMHx82oib2pjp5xsXqJo//migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
               fi
+
+      - destroy_environments:    
+          frontend: "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
+          backend: "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
+          bucket_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+      - rollback_migration:
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"        
 
   deploy-frontend:
     docker:
@@ -217,7 +270,15 @@ jobs:
             npm install
             npm run build
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
-            aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive         
+            aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive   
+
+      - destroy_environments: 
+          frontend: "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
+          backend: "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
+          bucket_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+
+      - rollback_migration:
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"                
 
   deploy-backend:
     docker:
@@ -251,6 +312,13 @@ jobs:
             echo "Contents  of the inventory.txt file is -------"
             cat inventory.txt
             ansible-playbook -i inventory.txt deploy-backend.yml
+
+      - destroy_environments:
+          frontend: "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
+          backend: "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
+          bucket_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+      - rollback_migration:
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"      
 
   smoke-test:
     docker:
@@ -296,6 +364,13 @@ jobs:
             else
               return 1
             fi      
+
+      - destroy_environments:
+          frontend: "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
+          backend: "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
+          bucket_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+      - rollback_migration:
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"      
 
     
 
