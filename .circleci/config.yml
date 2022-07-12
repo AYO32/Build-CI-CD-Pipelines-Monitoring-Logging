@@ -275,13 +275,12 @@ jobs:
       - run:
           name: Get backend url and Backend smoke test
           command: |            
-            export BACKEND_IP=$(aws --region us-east-1 ec2 describe-instances \
+            export BACKEND_IP=$(aws  ec2 describe-instances \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --filters "Name=tag:project,Values=udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --output text)        
             export API_URL="http://${BACKEND_IP}:3030"
             echo "${API_URL}"
-            sleep 3m
             if curl "${API_URL}/api/status" | grep "ok"
             then
               return 0
