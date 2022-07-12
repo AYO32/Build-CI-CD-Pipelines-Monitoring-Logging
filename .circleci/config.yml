@@ -151,6 +151,10 @@ jobs:
           command: |
              apk add --update ansible 
              apk  add --update tar gzip
+      - persist_to_workspace:
+            root: ~/
+            paths:
+              - project/.circleci/ansible/inventory.txt       
       - run:
           name: Configure server
           command: |
