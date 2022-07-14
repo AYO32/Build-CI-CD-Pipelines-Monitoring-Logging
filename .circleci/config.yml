@@ -136,26 +136,20 @@ jobs:
 
   configure-infrastructure:
     docker:
-      - image: python:3.7-alpine3.16
+      - image: python:3.7-alpine3.11
     steps:
       - checkout
       - add_ssh_keys: 
           fingerprints: ["4c:3d:9f:8d:93:01:43:92:8d:43:16:dd:27:a2:f9:02"]
-      - attach_workspace:
-          at: ~/
-      - run: cat ~/project/.circleci/ansible/inventory.txt   
+         
  
-
       - run:
           name: Install dependencies
           command: |
              apk add --update ansible 
              pip install awscli
              apk  add --update tar gzip
-      - persist_to_workspace:
-            root: ~/
-            paths:
-              - project/.circleci/ansible/inventory.txt       
+             
       - run:
           name: Configure server
           command: |
@@ -226,7 +220,7 @@ jobs:
 
   deploy-backend:
     docker:
-        - image: python:3.7-alpine3.16
+        - image: python:3.7-alpine3.11
     steps:
       - checkout
       - add_ssh_keys: 
