@@ -149,11 +149,13 @@ jobs:
 
   configure-infrastructure:
     docker:
-      - image: python:3.7-alpine3.11
+      - image: python:3.7-alpine3.16
     steps:
       - checkout
       - add_ssh_keys: 
-          fingerprints: ["4c:3d:9f:8d:93:01:43:92:8d:43:16:dd:27:a2:f9:02"]   
+          fingerprints: ["4c:3d:9f:8d:93:01:43:92:8d:43:16:dd:27:a2:f9:02"]
+      - attach_workspace:
+          at: ~/       
       - run:
           name: Install dependencies
           command: |
@@ -163,31 +165,19 @@ jobs:
       - run:
           name: Configure server
           command: |
-            echo NODE_ENV=production > ~/project/backend/.env
-            echo TYPEORM_CONNECTION:$TYPEORM_CONNECTION >> ~/project/backend/.env 
-            echo TYPEORM_ENTITIES:$TYPEORM_CONNECTION >> ~/project/backend/.env 
-            echo TYPEORM_HOST:$TYPEORM_HOST >> ~/project/backend/.env  
-            echo TYPEORM_PORT:$TYPEORM_PORT >> ~/project/backend/.env  
-            echo TYPEORM_USERNAME:$TYPEORM_USERNAME >> ~/project/backend/.env  
-            echo TYPEORM_PASSWORD:$TYPEORM_PASSWORD >> ~/project/backend/.env  
-            echo TYPEORM_DATABASE:$TYPEORM_DATABASE >> ~/project/backend/.env  
-            echo TYPEORM_MIGRATIONS:$TYPEORM_MIGRATIONS >> ~/project/backend/.env  
-            echo TYPEORM_MIGRATIONS_DIR:$TYPEORM_MIGRATION_DIR >> ~/project/backend/.env 
-            cat ~/project/backend/.env
-
-            cd ~/project/.circleci/ansible
+            cd .circleci/ansible
             ansible-playbook -i inventory.txt configure-server.yml
-      - persist_to_workspace:
-          root: ~/
-          paths:
-            - project/backend/.env
-      
-
+      - destroy_environments:
+            workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}        
   run-migrations:
     docker:
-      - image: circleci/node:13.8.0
+      - image: python:3.7-alpine3.16
     steps:
       - checkout
+      - run:
+          name: Install dependencies
+          command:  |
+            apk add --update --no-cache tar gzip nodejs npm aws-cli curl
       - restore_cache:
           keys: [backend-build]
       - attach_workspace:
@@ -196,26 +186,19 @@ jobs:
           name: Run migrations
           command: |
              cd backend
-             npm install > /dev/null
-             npm run build > /dev/null
-             npm run migrations --force > migrations_dump.txt
-             cat migrations_dump.txt
-      - persist_to_workspace:
-          root: ~/
-          paths:
-            - project/backend/
-             
+             npm install 
+             npm run build 
+             npm run migrations --force > migrations_dump.txt           
       - run:
           name: Send migration status to kvdb.io 
           command: |   
               if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt
               then
-                  curl https://kvdb.io/8fsMHx82oib2pjp5xsXqJo//migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
+                  curl --insecure https://kvdb.io/8fsMHx82oib2pjp5xsXqJo//migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
               fi
-
+      - destroy_environments:
+            workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
     
-           
-
   deploy-frontend:
     docker:
       - image: amazon/aws-cli

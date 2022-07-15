@@ -1,36 +1,30 @@
 ---
-  - name: "update apt packages."
+  - name: "update and upgrade packages"
     become: yes
     apt:
+      upgrade: yes
       update_cache: yes
-
-  - name: "remove dependencies that are no longer required"
+      cache_valid_time: 86400
+  - name: remove unneeded deps  #auto apt remove
     become: yes
     apt:
-      autoremove: yes
-
-  - name: "install nodejs and npm"
+       autoremove: yes
+  - name: install deps  #install nodejs and npm
     become: yes
-    apt:
+    apt:     
       name: ["nodejs", "npm"]
       state: latest
       update_cache: yes
-
-  - name: "install n"
-    become: yes
-    npm:
-      name: n
-      global: yes
-      production: yes
-
-  - name: "install nodejs 13.8.0"
-    become: yes
-    shell: n 13.8.0
-
-  - name: "install pm2"
+   - name: "install pm2"  #sudo npm install pm2
     become: yes
     npm:
       name: pm2
       global: yes
       production: yes
-      state: present
+      state: present    
+
+
+
+  
+
+  
