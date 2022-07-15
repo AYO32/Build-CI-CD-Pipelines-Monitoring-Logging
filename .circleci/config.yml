@@ -1,6 +1,24 @@
 version: 2.1
 
-
+orbs:
+  aws-cli: circleci/aws-cli@2.0.3
+commands:
+  destroy_environments:
+    description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
+    parameters:
+      workflow_id:
+        type: string
+        default: ${CIRCLECI_WORKFLOW_ID}
+    steps:
+      - run:
+          name: Destroy environment
+          when: on_fail
+          command: |
+            aws cloudformation delete-stack \
+            --stack-name udapeople-backend-<<parameters.workflow_id>>
+            aws s3 rm "s3://udapeople-<<parameters.workflow_id >>" --recursive
+            aws cloudformation delete-stack \
+            --stack-name udapeople-frontend-<< parameters.workflow_id>>
           
 jobs:
   build-frontend:
@@ -18,8 +36,7 @@ jobs:
             npm run build
       - save_cache:
           paths: [frontend/node_modules]
-          key: frontend-build
-         
+          key: frontend-build         
   build-backend:
     docker:
       - image: circleci/node:13.8.0
@@ -35,8 +52,7 @@ jobs:
              npm run build
       - save_cache:
           paths: [backend/node_modules]
-          key: backend-build      
-      
+          key: backend-build           
   test-frontend:
     docker:
       - image: circleci/node:13.8.0
@@ -49,8 +65,7 @@ jobs:
           command: |
              cd frontend
              npm install
-             npm run test
-                      
+             npm run test                     
   test-backend:
     docker:
       - image: circleci/node:13.8.0
@@ -64,7 +79,6 @@ jobs:
              cd backend
              npm install
              npm run test
-
   scan-frontend:
     docker:
       - image: circleci/node:13.8.0
@@ -80,7 +94,6 @@ jobs:
              # npm install oauth-sign@^0.9.0
              npm audit fix --audit-level=critical --force
              npm audit --audit-level=critical
-
   scan-backend:
     docker:
       - image: circleci/node:13.8.0
@@ -96,23 +109,20 @@ jobs:
              # npm install oauth-sign@^0.9.0
              npm audit fix --audit-level=critical --force
              npm audit fix --audit-level=critical
-
-
   deploy-infrastructure: 
       docker:
         - image: amazon/aws-cli
       steps:
         - checkout
+        - run: yum -y install tar gzip
         - run:
             name: Ensure back-end infrastructure exists
-            command: |    
-               yum -y install tar gzip      
+            command: |        
                aws cloudformation deploy \
                  --template-file .circleci/files/backend.yml \
                  --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
                  --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  \
-                 --tags project=udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
-               
+                 --tags project=udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}              
         - run:
             name: Ensure front-end infrastructure exist
             command: | 
@@ -126,12 +136,14 @@ jobs:
             command: |
               aws ec2 describe-instances \
               --query 'Reservation[*].Instances[*].PublicIpAddress' \
-              --output text >> .circleci/ansible/inventory.txt
-              cat .circleci/ansible/inventory.txt               
+              --filter "Name=tag:aws:cloudformation:stack-name,Values=udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+              --output text) >> ~/project/.circleci/ansible/inventory.txt               
         - persist_to_workspace:
             root: ~/
             paths:
-              - project/.circleci/ansible/inventory.txt   
+              - project/.circleci/ansible/inventory.txt 
+        - destroy-environment:
+            workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}        
 
          
 
