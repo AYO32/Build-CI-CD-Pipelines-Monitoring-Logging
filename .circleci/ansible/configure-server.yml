@@ -14,8 +14,8 @@
   pre_tasks:
     - name: "wait 600 seconds for target connection to become reachable/usable."
       wait_for_connection: 
-         time_out: 600
-
+       
+       
     - name: "Install python for a ansible."
       apt:
          name: python3
@@ -32,7 +32,6 @@
   - TYPEORM_DATABASE: "{{ lookup('env', 'TYPEORM_DATABASE')}}"
   - TYPEORM_MIGRATIONS: "{{ lookup('env', 'TYPEORM_MIGRATIONS')}}"
   - TYPEORM_MIGRATIONS_DIR: "{{ lookup('env', 'TYPEORM_MIGRATIONS_DIR')}}"
-
 
   roles:
     - configure-server
