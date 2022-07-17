@@ -124,6 +124,7 @@ jobs:
              # npm install oauth-sign@^0.9.0
              npm audit fix --audit-level=critical --force
              npm audit fix --audit-level=critical
+             
   deploy-infrastructure: 
       docker:
         - image: amazon/aws-cli
@@ -189,7 +190,8 @@ jobs:
       - destroy_environments:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}   
       - revert-migrations:
-          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"               
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"  
+                       
   run-migrations:
     docker:
       - image: python:3.7-alpine3.16
