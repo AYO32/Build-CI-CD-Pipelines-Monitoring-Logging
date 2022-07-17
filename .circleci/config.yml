@@ -33,7 +33,7 @@ commands:
               npm install
               npm run build
               npm run migration:revert
-            fi          
+                     
           
 jobs:
   build-frontend:
