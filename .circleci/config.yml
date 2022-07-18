@@ -29,14 +29,11 @@ commands:
           name: revert migrations
           when: on_fail
           command: |
-            SUCCESS=$(curl --insecure  https://kvdb.io/8fsMHx82oib2pjp5xsXqJo/migration_<< parameters.workflow_id >>)
-            if(( $SUCCESS==1 )); 
-            then
-               cd ~/project/backend
-               npm install
-               npm run build
-               npm run migration:revert
-            fi   
+            cd ~/project/backend
+            npm install
+            npm run build
+            npm run migration:revert
+               
                      
           
 jobs:
@@ -340,20 +337,65 @@ jobs:
             echo ${URL} 
             if curl -s ${URL} | grep "Welcome"
             then
-                     # Change this to 0 after the job fails
-              return 1
+              return 0
             else
-              return 1
+              return 0
             fi                
       - destroy_environments:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}               
       - revert-migrations:
           workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"
+
+  cloudfront-update:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            yum install -y npm nodejs
+      - run:     
+          name: Update cloudfront distribution
+          command: |
+            export OldworkflowID=$(aws cloudformation list-exports \
+            --query "Exports[?Name==\'workflowID\'].Value" \
+            --no-paginate --output text)
+            aws cloudformation deploy \
+            --template-file cloudfront.yml \
+            --stack-name InitialStack \
+            --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" \
+            --tags project=udapeople
+      - destroy_environments:
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - revert-migrations:
+          workflow_id: "${CIRCLE_WORKFLOW_ID:0:7}"  
+
+  cleanup:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Get old stack workflow id
+          command: |
+            export OldWorkflowID=<<pipeline.parameters.workflow_id>>                  
+            export STACKS=($(aws cloudformation list-stacks \
+            --query "StackSummaries[*].StackName" \
+            --stack-status-filter CREATE_COMPLETE --no-paginate --output text)   
+      - run:
+          name: Remove old stacks and files
+          command: |
+            if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
+            then
+              aws s3 rm "s3://udapeople-${OldWorkflowID}" --recursive
+              aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
+              aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
+            fi              
       
           
 
-                         
-                               
+                                                 
 workflows:
   default:
     jobs:
@@ -379,7 +421,10 @@ workflows:
           requires: [run-migrations]       
       - smoke-test:
           requires: [deploy-backend, deploy-frontend]   
-        
+      - cloudfront-update:
+          requires: [smoke-test]    
+      - cleanup:
+          requires: [cloudfront-update]  
             
          
                       
