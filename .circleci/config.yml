@@ -368,7 +368,7 @@ jobs:
           name: Update cloudfront distribution
           command: |
             export OldworkflowID=$(aws cloudformation list-exports \
-            --query "Exports[?Name==\'workflowID\'].Value" \
+            --query "Exports[?Name==\`workflowID\`].Value" \
             --no-paginate --output text)
             aws cloudformation deploy \
             --template-file cloudfront.yml \
