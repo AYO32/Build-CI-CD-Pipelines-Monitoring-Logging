@@ -360,7 +360,9 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            yum install tar gzip npm nodejs -y --enablerepo-epel
+            curl -fsSL https://rpm.nodesource.com/setup_16.x | bash - && yum -y install nodejs
+            yum -y install epel-release
+            yum -y install npm
       - run:     
           name: Update cloudfront distribution
           command: |
