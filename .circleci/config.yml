@@ -391,10 +391,15 @@ jobs:
             export OldWorkflowID=<<pipeline.parameters.workflow_id>>                  
             export STACKS=$(aws cloudformation list-stacks \
             --query "StackSummaries[*].StackName" \
-            --stack-status-filter CREATE_COMPLETE --no-paginate --output text)   
+            --stack-status-filter CREATE_COMPLETE --no-paginate --output text)  
+            export OldWorkflowID=$(curl --insecure https://kvdb.io/8fsMHx82oib2pjp5xsXqJo/old_workflow_id) 
+            echo OldWorkflow ID: $OldWorkflowID 
       - run:
           name: Remove old stacks and files
           command: |
+            export OldWorkflowID=$(curl --insecure https://kvdb.io/8fsMHx82oib2pjp5xsXqJo/old_workflow_id)
+            echo OldWorkflow ID: $OldWorkflowID
+            
             if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
             then
               echo. "...................delete confirmed................"
