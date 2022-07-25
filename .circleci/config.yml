@@ -363,7 +363,7 @@ jobs:
             yum install python3 -y
             yum install gzip tar curl -y
       - run:     
-          name: Update cloudfront distribution.
+          name: Update cloudfront distribution
           command: |
             aws cloudformation deploy \
             --template-file .circleci/files/cloudfront.yml \
